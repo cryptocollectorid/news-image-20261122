@@ -27,6 +27,21 @@ happened or were first reported on Sunday 22 November 2026:
 
 Sources: AP, Reuters, BBC, ANI, One Turn (22 November 2026).
 
+## Design (second edition)
+
+- **Masthead:** kicker line above the nameplate, a double red rule
+  below it, a dateline row split left/right (date left, "SIX STORIES
+  - ONE PAGE" right), and a line naming the six datelines the stories
+  report from.
+- **Panels:** soft drop shadow, a 3px accent line under the kicker
+  band, a short ornament rule under each headline, and the key fact
+  pinned in a tinted strip at the foot of the panel.
+- **Tech picture:** the phone sits higher with a larger shield, and
+  "REAL OR FAKE?" now has its own centred caption strip at the foot
+  of the picture.
+- **Footer:** a rule with the nameplate at the left, the sources
+  centred, and the page number at the right.
+
 ## How it works
 
 `main.py` is a single self-contained Python 3 program (standard library

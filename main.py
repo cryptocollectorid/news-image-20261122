@@ -26,6 +26,16 @@ below by hand (5x7 glyphs, no font file, no image file, no network),
 simple geometric illustrations per story, and a hand-written PNG
 encoder. Standard library only. No randomness, no timestamps, no
 network: two runs produce byte-identical output.
+
+Second edition: the masthead carries a kicker line above the nameplate,
+a double red rule below it and a dateline row split left/right, plus a
+line naming the six datelines the stories report from. Panels sit on a
+soft drop shadow, with an accent line under the kicker band, a short
+ornament rule under each headline, and the key fact pinned in a tinted
+strip at the foot of the panel. The Tech picture was reworked so its
+"REAL OR FAKE?" line sits in its own caption strip instead of floating
+under the phone, and the footer now carries the nameplate, the sources
+and a page number.
 """
 
 import hashlib
@@ -43,6 +53,8 @@ MUTED = (96, 90, 78)
 RED = (163, 22, 33)
 PANEL = (255, 255, 255)
 EDGE = (198, 192, 176)
+SHADOW = (214, 208, 192)
+FACTSTRIP = (253, 238, 236)
 SKY = (205, 228, 240)
 NAVY = (18, 30, 58)
 SLATE = (70, 90, 120)
@@ -393,33 +405,43 @@ def pic_baltic(c, x, y, w, h):
 
 
 def pic_tiktok(c, x, y, w, h):
-    """Phone with a music note, shielded by a verification check."""
+    """Phone with a music note, shielded by a verification check.
+
+    Reworked for the second edition: the phone sits higher and the
+    shield is larger, and the "REAL OR FAKE?" line now lives in its
+    own centred caption strip at the foot of the picture, instead of
+    floating under the phone where it used to crowd the frame.
+    """
     c.fill_rect(x, y, w, h, (24, 24, 30))
-    # Phone (shortened so the caption below it stays on the dark ground).
-    px, py, pw, ph = x + 34, y + 14, 108, 104
+    # Phone, raised off the caption strip.
+    px, py, pw, ph = x + 28, y + 8, 112, 100
     c.fill_rect(px, py, pw, ph, (255, 255, 255))
     c.rect(px, py, pw, ph, INK, 2)
     c.fill_rect(px, py, pw, 16, INK)
     # Music note on the screen.
-    nx, ny = px + pw // 2 + 6, py + 58
+    nx, ny = px + pw // 2 + 6, py + 56
     c.disc(nx - 16, ny + 12, 9, (0, 0, 0))
-    c.fill_rect(nx - 8, ny - 34, 4, 46, (0, 0, 0))
-    c.fill_rect(nx - 8, ny - 34, 26, 4, (0, 0, 0))
+    c.fill_rect(nx - 8, ny - 32, 4, 44, (0, 0, 0))
+    c.fill_rect(nx - 8, ny - 32, 26, 4, (0, 0, 0))
     c.disc(nx + 18, ny + 12, 9, (0, 0, 0))
-    c.fill_rect(nx + 26, ny - 34, 4, 46, (0, 0, 0))
+    c.fill_rect(nx + 26, ny - 32, 4, 44, (0, 0, 0))
     c.disc(nx - 16, ny + 12, 9, (255, 0, 80))
     c.disc(nx + 18, ny + 12, 9, (0, 242, 234))
-    # Shield with a check, right side.
-    sx, sy = x + w - 96, y + 44
-    shield = [(sx, sy), (sx + 64, sy), (sx + 64, sy + 44),
-              (sx + 32, sy + 84), (sx, sy + 44)]
+    # Shield with a check, right side, larger than before.
+    sx, sy = x + w - 102, y + 26
+    shield = [(sx, sy), (sx + 68, sy), (sx + 68, sy + 48),
+              (sx + 34, sy + 90), (sx, sy + 48)]
     for i in range(5):
         c.line(shield[i][0], shield[i][1],
                shield[(i + 1) % 5][0], shield[(i + 1) % 5][1], TEAL, 4)
-    c.fill_rect(sx + 8, sy + 8, 48, 64, (0, 180, 180))
-    c.line(sx + 16, sy + 40, sx + 28, sy + 52, (255, 255, 255), 5)
-    c.line(sx + 28, sy + 52, sx + 50, sy + 24, (255, 255, 255), 5)
-    draw_text(c, x + 16, y + 124, "REAL OR FAKE?", 2, (255, 255, 255))
+    c.fill_rect(sx + 9, sy + 9, 50, 68, (0, 180, 180))
+    c.line(sx + 17, sy + 42, sx + 30, sy + 56, (255, 255, 255), 5)
+    c.line(sx + 30, sy + 56, sx + 53, sy + 25, (255, 255, 255), 5)
+    # Caption strip along the foot of the picture.
+    c.fill_rect(x, y + h - 26, w, 26, (48, 48, 58))
+    cap = "REAL OR FAKE?"
+    draw_text(c, x + (w - text_width(cap, 2)) // 2, y + h - 21, cap, 2,
+              (255, 255, 255))
 
 
 # ---------------------------------------------------------------------------
@@ -428,25 +450,35 @@ def pic_tiktok(c, x, y, w, h):
 
 def draw_panel(canvas, x, y, w, h, kicker, kicker_color, title, caption,
                pic_fn, fact=""):
+    # A soft drop shadow lifts the panel off the paper.
+    canvas.fill_rect(x + 4, y + 5, w, h, SHADOW)
     canvas.fill_rect(x, y, w, h, PANEL)
     canvas.rect(x, y, w, h, EDGE, 2)
     canvas.fill_rect(x, y, w, 34, kicker_color)
+    # A 3px accent line in the kicker colour under the kicker band.
+    canvas.fill_rect(x, y + 34, w, 3, kicker_color)
     draw_text(canvas, x + 12, y + 8, kicker.upper(), 2, (255, 255, 255))
-    pic_fn(canvas, x + 2, y + 36, w - 4, 146)
+    pic_fn(canvas, x + 2, y + 39, w - 4, 143)
     ty = y + 194
     # The bitmap font holds upper-case glyphs only: normalise here so a
     # mixed-case story line can never render as scattered fragments.
     for line in wrap_text(title.upper(), w - 24, 3):
         draw_text(canvas, x + 12, ty, line, 3, INK)
         ty += 26
-    ty += 6
+    # A short ornament rule in the kicker colour under the headline.
+    canvas.fill_rect(x + 12, ty + 2, 48, 3, kicker_color)
+    ty += 16
     for line in wrap_text(caption.upper(), w - 24, 2):
         draw_text(canvas, x + 12, ty, line, 2, (52, 52, 52))
         ty += 17
     if fact:
+        # The key fact sits in a tinted strip pinned to the foot of the
+        # panel, so it never floats in the white space below the text.
         lines = wrap_text(fact.upper(), w - 24, 2)
-        fy = y + h - 12 - 17 * len(lines)
-        canvas.fill_rect(x + 12, fy - 10, w - 24, 2, EDGE)
+        strip_y = y + h - 46
+        canvas.fill_rect(x + 2, strip_y, w - 4, 44, FACTSTRIP)
+        canvas.fill_rect(x + 2, strip_y, w - 4, 2, RED)
+        fy = strip_y + (44 - 17 * len(lines)) // 2
         for line in lines:
             draw_text(canvas, x + 12, fy, line, 2, RED)
             fy += 17
@@ -494,18 +526,25 @@ STORIES = [
 def draw_page():
     c = Canvas(W, H, PAPER)
     c.rect(0, 0, W, H, INK, 4)
-    # Masthead
+    # Masthead: a kicker line above the nameplate, a double red rule
+    # below it, then a dateline row split left/right and a line naming
+    # the six datelines the stories report from.
+    kicker = "THE DAY IN ONE PAGE"
+    kw = text_width(kicker, 2)
+    draw_text(c, (W - kw) // 2, 12, kicker, 2, MUTED)
     title = "THE WORLD TODAY"
     tw = text_width(title, 7)
-    draw_text(c, (W - tw) // 2, 26, title, 7, INK)
-    c.fill_rect(28, 92, W - 56, 4, RED)
+    draw_text(c, (W - tw) // 2, 32, title, 7, INK)
+    c.fill_rect(28, 90, W - 56, 4, RED)
+    c.fill_rect(28, 97, W - 56, 2, RED)
     date = "SUNDAY 22 NOVEMBER 2026"
-    dw = text_width(date, 3)
-    draw_text(c, (W - dw) // 2, 106, date, 3, RED)
-    sub = "SIX STORIES FROM AROUND THE WORLD - THE DAY IN ONE PAGE"
+    draw_text(c, 28, 108, date, 2, RED)
+    right = "SIX STORIES - ONE PAGE"
+    draw_text(c, W - 28 - text_width(right, 2), 108, right, 2, MUTED)
+    sub = "BAHRAIN - SINALOA - BRUSSELS - ANTALYA - THE BALTIC - SILICON VALLEY"
     sw = text_width(sub, 2)
-    draw_text(c, (W - sw) // 2, 138, sub, 2, MUTED)
-    c.fill_rect(28, 162, W - 56, 2, EDGE)
+    draw_text(c, (W - sw) // 2, 132, sub, 2, MUTED)
+    c.fill_rect(28, 158, W - 56, 2, EDGE)
     # Story grid: 3 columns x 2 rows
     margin, gap = 16, 12
     pw = (W - 2 * margin - 2 * gap) // 3
@@ -515,10 +554,15 @@ def draw_page():
         px = margin + col * (pw + gap)
         py = 176 + row * (ph + gap)
         draw_panel(c, px, py, pw, ph, *story, fact=FACTS[i])
-    # Footer
+    # Footer: a rule, then the nameplate at the left, the sources
+    # centred, and the page number at the right.
+    c.fill_rect(28, 1000, W - 56, 2, EDGE)
+    draw_text(c, 28, 1008, "THE WORLD TODAY", 1, MUTED)
     foot = "SOURCES: AP, REUTERS, BBC, ANI, ONE TURN - 22 NOVEMBER 2026"
     fw = text_width(foot, 1)
-    draw_text(c, (W - fw) // 2, 1006, foot, 1, MUTED)
+    draw_text(c, (W - fw) // 2, 1008, foot, 1, MUTED)
+    page = "PAGE 1"
+    draw_text(c, W - 28 - text_width(page, 1), 1008, page, 1, MUTED)
     return c
 
 
